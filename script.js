@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusDiv = document.getElementById('status');
     const maintainRatioCheckbox = document.getElementById('maintainRatio');
 
-    // Adicionar JSZip e FileSaver.js dinamicamente
     const loadScript = (src) => new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = src;
@@ -24,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
         qualityValue.textContent = this.value;
     });
 
-    // Preview das imagens selecionadas
     imagesInput.addEventListener('change', function (e) {
         previewContainer.innerHTML = '';
 
@@ -82,9 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Processar imagens e criar ZIP
     resizeBtn.addEventListener('click', async function () {
-        // Carregar bibliotecas necessárias
         try {
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js');
@@ -113,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const imgFolder = zip.folder("imagens_redimensionadas");
             let processedCount = 0;
 
-            // Processar cada imagem
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 if (!file.type.match('image.*')) continue;
@@ -123,7 +118,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     `Processando ${i + 1} de ${files.length}: ${file.name}`
                 );
 
-                // Redimensionar a imagem
                 const resizedImageBlob = await resizeImage(
                     file,
                     targetWidth,
@@ -132,12 +126,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     maintainRatio
                 );
 
-                // Adicionar ao ZIP
                 const fileName = file.name.replace(/\.[^/.]+$/, "") + "_resized.jpg";
                 imgFolder.file(fileName, resizedImageBlob);
                 processedCount++;
 
-                // Atualizar preview com a imagem redimensionada
                 updateImagePreview(file, URL.createObjectURL(resizedImageBlob));
             }
 
@@ -147,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             updateProgress(100, 'Criando arquivo ZIP...');
 
-            // Gerar o arquivo ZIP
             const zipContent = await zip.generateAsync({type: 'blob'}, (metadata) => {
                 updateProgress(
                     Math.round(metadata.percent),
@@ -155,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             });
 
-            // Salvar o ZIP
             saveAs(zipContent, 'imagens_redimensionadas.zip');
 
             resetForm();
@@ -169,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Função para redimensionar imagem
     function resizeImage(file, targetWidth, targetHeight, quality, maintainRatio) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -180,10 +169,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     let finalWidth, finalHeight;
 
                     if (maintainRatio) {
-                        // Manter proporção original
                         const ratio = img.width / img.height;
 
-                        // Verificar qual dimensão é o fator limitante
                         if (targetWidth / targetHeight > ratio) {
                             finalWidth = targetHeight * ratio;
                             finalHeight = targetHeight;
@@ -192,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             finalHeight = targetWidth / ratio;
                         }
                     } else {
-                        // Usar exatamente as dimensões solicitadas (pode distorcer)
                         finalWidth = targetWidth;
                         finalHeight = targetHeight;
                     }
@@ -204,17 +190,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     ctx.imageSmoothingQuality = 'high';
                     ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
 
-                    // Converter qualidade de 1-10 para 0.1-1.0
                     const actualQuality = quality / 10;
 
-                    // Converter para blob
                     canvas.toBlob(function (blob) {
                         if (!blob) {
                             reject(new Error('Falha ao converter imagem'));
                             return;
                         }
                         resolve(blob);
-                    }, 'image/jpeg', actualQuality); // Usando actualQuality convertido
+                    }, 'image/jpeg', actualQuality);
                 };
                 img.onerror = () => reject(new Error('Falha ao carregar imagem'));
                 img.src = e.target.result;
@@ -224,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Atualizar preview com imagem redimensionada
     function updateImagePreview(file, resizedUrl) {
         const previewItems = previewContainer.querySelectorAll('.preview-item');
 
@@ -234,7 +217,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const img = item.querySelector('img');
                 img.src = resizedUrl;
 
-                // Atualizar informações de tamanho
                 const imgTemp = new Image();
                 imgTemp.onload = function () {
                     const dimensionsDiv = item.querySelectorAll('.small.text-muted')[1];
@@ -262,7 +244,6 @@ document.addEventListener('DOMContentLoaded', function () {
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `;
 
-        // Remove alerts antigos
         const oldAlerts = document.querySelectorAll('.alert');
         oldAlerts.forEach(alert => alert.remove());
 
@@ -285,30 +266,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function resetForm() {
-        // Limpar input de arquivos
         imagesInput.value = '';
         
-        // Limpar pré-visualizações
         previewContainer.innerHTML = '';
         
-        // Resetar valores dos campos
         document.getElementById('width').value = '1290';
         document.getElementById('height').value = '2796';
         document.getElementById('quality').value = '10';
         document.getElementById('qualityValue').textContent = '10';
         
-        // Desmarcar checkbox (opcional)
         maintainRatioCheckbox.checked = true;
         
-        // Resetar barra de progresso
         progressBar.style.width = '0%';
         progressPercent.textContent = '0%';
         progressContainer.style.display = 'none';
         
-        // Limpar mensagens de status
         statusDiv.textContent = '';
         
-        // Remover todos os alerts
         document.querySelectorAll('.alert').forEach(alert => alert.remove());
     }
 });
