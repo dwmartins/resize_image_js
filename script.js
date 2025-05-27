@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js');
         } catch (error) {
-            showAlert('Erro ao carregar bibliotecas necessárias', 'danger');
+            showAlert('Erro ao carregar bibliotecas necessárias', 'danger', 3000);
             console.error(error);
             return;
         }
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const maintainRatio = maintainRatioCheckbox.checked;
 
         if (!files || files.length === 0) {
-            showAlert('Por favor, selecione pelo menos uma imagem.', 'danger');
+            showAlert('Por favor, selecione pelo menos uma imagem.', 'danger', 3000);
             return;
         }
 
@@ -158,8 +158,10 @@ document.addEventListener('DOMContentLoaded', function () {
             // Salvar o ZIP
             saveAs(zipContent, 'imagens_redimensionadas.zip');
 
+            resetForm();
+
             updateProgress(100, 'Download iniciado!');
-            showAlert(`${processedCount} imagem(ns) processada(s) com sucesso! O download do ZIP começará automaticamente.`, 'success');
+            showAlert(`${processedCount} imagem(ns) processada(s) com sucesso! O download do ZIP começará automaticamente.`, 'success', 5000);
         } catch (error) {
             updateProgress(0, 'Erro no processamento');
             showAlert('Erro: ' + error.message, 'danger');
@@ -252,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function showAlert(message, type) {
+    function showAlert(message, type, duration = 5000) {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
         alertDiv.innerHTML = `
@@ -265,6 +267,13 @@ document.addEventListener('DOMContentLoaded', function () {
         oldAlerts.forEach(alert => alert.remove());
 
         progressContainer.parentNode.insertBefore(alertDiv, progressContainer.nextSibling);
+
+        if (duration > 0) {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alertDiv);
+                bsAlert.close();
+            }, duration);
+        }
     }
 
     function formatFileSize(bytes) {
@@ -273,5 +282,33 @@ document.addEventListener('DOMContentLoaded', function () {
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function resetForm() {
+        // Limpar input de arquivos
+        imagesInput.value = '';
+        
+        // Limpar pré-visualizações
+        previewContainer.innerHTML = '';
+        
+        // Resetar valores dos campos
+        document.getElementById('width').value = '1290';
+        document.getElementById('height').value = '2796';
+        document.getElementById('quality').value = '10';
+        document.getElementById('qualityValue').textContent = '10';
+        
+        // Desmarcar checkbox (opcional)
+        maintainRatioCheckbox.checked = true;
+        
+        // Resetar barra de progresso
+        progressBar.style.width = '0%';
+        progressPercent.textContent = '0%';
+        progressContainer.style.display = 'none';
+        
+        // Limpar mensagens de status
+        statusDiv.textContent = '';
+        
+        // Remover todos os alerts
+        document.querySelectorAll('.alert').forEach(alert => alert.remove());
     }
 });
