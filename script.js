@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('quality').value = '10';
         document.getElementById('qualityValue').textContent = '10';
         
-        maintainRatioCheckbox.checked = true;
+        maintainRatioCheckbox.checked = false;
         
         progressBar.style.width = '0%';
         progressPercent.textContent = '0%';
